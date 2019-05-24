@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "375334404521",
+    "firebase_url": "https://cameraapp-eedad.firebaseio.com",
+    "project_id": "cameraapp-eedad",
+    "storage_bucket": "cameraapp-eedad.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:375334404521:android:6d392944923ac5a9",
+        "android_client_info": {
+          "package_name": "com.example.a02cameraapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "375334404521-s7uubita648q9o05jthokqv7t3pkpqnb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.a02cameraapp",
+            "certificate_hash": "94ea35f48ad8a5d2f2785da0e69066067a457979"
+          }
+        },
+        {
+          "client_id": "375334404521-4739tllslboaci3mut2c3cqfasabfl1o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCC_eQCr88DG3CMKn_JWDC9FbfLf7ZZp-o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "375334404521-4739tllslboaci3mut2c3cqfasabfl1o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
