@@ -10,7 +10,7 @@ import android.provider.MediaStore
 import android.widget.Toast
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
-import com.google.firebase.ml.vision.label.FirebaseVisionOnDeviceImageLabelerOptions
+import com.google.firebase.ml.vision.label.FirebaseVisionImageLabeler
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -63,24 +63,27 @@ class MainActivity : AppCompatActivity() {
 //            .build()
 //        val labeler = FirebaseVision.getInstance().getOnDeviceImageLabeler(options)
 //        val labeler = FirebaseVision.getInstance().onDeviceImageLabeler
-        val labeler = FirebaseVision.getInstance().onDeviceImageLabeler
+//        val labeler = FirebaseVision.getInstance().onDeviceImageLabeler
+//        val labeler = FirebaseVision.getInstance().getOnDeviceImageLabeler()
+            val labeler = FirebaseVision.getInstance().cloudTextRecognizer
+
 
         // TODO if connected with the internet use .getCloudImageLabeler() instead of getOnDeviceImageLabeler()
         // TODO - add options https://medium.com/androidiots/firebase-ml-kit-101-image-labeling-8078784205cb
 
-        var result:String = ""
+        var result:String = "ok"
 
-        labeler.processImage(image)
-            .addOnSuccessListener { labels ->
-                for (label in labels) {
-                    val text = label.text
-                    val confidence = label.confidence
-                    result = result + text + confidence.toString()
-                }
-            }
-            .addOnFailureListener {
-                result = "No label found, try one more time"
-            }
+//        labeler.processImage(image)
+//            .addOnSuccessListener { labels ->
+//                for (label in labels) {
+//                    val text = label.text
+//                    val confidence = label.confidence
+//                    result = result + text + confidence.toString()
+//                }
+//            }
+//            .addOnFailureListener {
+//                result = "No label found, try one more time"
+//            }
 
         return result
     }
