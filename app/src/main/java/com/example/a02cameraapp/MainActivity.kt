@@ -1,6 +1,7 @@
 package com.example.a02cameraapp
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
@@ -21,16 +22,17 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import com.example.a02cameraapp.Labeler
 
-class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
+open class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private var labeler: Labeler? = null
     private var tts: TextToSpeech? = null
     val CAMERA_REQUEST_CODE = 0
+    //val mainContext: Context = this.applicationContext
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         tts = TextToSpeech(this, this)
-        Labeler(tts)
+        labeler = Labeler()
 
         cameraButton.setOnClickListener {
             val callCameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -47,12 +49,13 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             CAMERA_REQUEST_CODE -> {
                 if(resultCode == Activity.RESULT_OK && data!= null){
                     val photo = data.extras.get("data") as Bitmap
-                    labeler?.recognizeObject(this, photo)
+                    val label: String = labeler!!.recognizeObject(photo)
                     photoImageView.setImageBitmap(photo)
+                    displayLongToast(label)
                 }
             }
             else -> {
-                labeler?.displayLongToast(this,"Unrecognized request code")
+                displayLongToast("Unrecognized request code")
             }
         }
     }
@@ -68,5 +71,38 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         } else {
             Log.e("TTS", "Initilization Failed!")
         }
+    }
+
+    fun displayLongToast(label: String) {
+        Toast.makeText(this, label, Toast.LENGTH_LONG).show()
+        speakOut(label)
+    }
+
+//    fun displayLongToast(label: Labeler) {
+//        Toast.makeText(this, labeler!!.getLabel(), Toast.LENGTH_LONG).show()
+//        speakOut(labeler!!.getLabel())
+//    }
+
+    fun displayShortToast(label: String) {
+        Toast.makeText(this, label, Toast.LENGTH_SHORT).show()
+        speakOut(label)
+    }
+
+//    fun displayShortToast(label: Labeler) {
+//        Toast.makeText(this, labeler!!.getLabel(), Toast.LENGTH_SHORT).show()
+//        speakOut(labeler!!.getLabel())
+//    }
+
+    private fun speakOut(text: String) {
+        tts!!.speak(text, TextToSpeech.QUEUE_FLUSH, null, "")
+    }
+
+    public override fun onDestroy() {
+        // Shutdown TTS
+        if (tts != null) {
+            tts!!.stop()
+            tts!!.shutdown()
+        }
+        super.onDestroy()
     }
 }
