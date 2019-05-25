@@ -8,7 +8,6 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.speech.tts.TextToSpeech
-import android.support.annotation.RequiresApi
 import android.util.Log
 import android.widget.Toast
 import com.google.firebase.ml.vision.FirebaseVision
@@ -67,7 +66,6 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
     }
 
-    // TODO - separate from different class
     private fun recognizeObject(photo: Bitmap) {
         val image = FirebaseVisionImage.fromBitmap(photo)
 
@@ -86,6 +84,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 // else use on device processing and suggest turning on the internet
                 else{
                     displayShortToast("To improve recognition turn on internet connection")
+                    Thread.sleep(2500)
                     val options = FirebaseVisionOnDeviceImageLabelerOptions.Builder()
                         .setConfidenceThreshold(0.7f)
                         .build()
