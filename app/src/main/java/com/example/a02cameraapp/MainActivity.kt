@@ -1,7 +1,6 @@
 package com.example.a02cameraapp
 
 import android.app.Activity
-import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Bitmap
 import android.support.v7.app.AppCompatActivity
@@ -10,7 +9,10 @@ import android.provider.MediaStore
 import android.widget.Toast
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
+import com.google.firebase.ml.vision.label.FirebaseVisionCloudImageLabelerOptions
+import com.google.firebase.ml.vision.label.FirebaseVisionImageLabel
 import com.google.firebase.ml.vision.label.FirebaseVisionImageLabeler
+import com.google.firebase.ml.vision.label.FirebaseVisionOnDeviceImageLabelerOptions
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -36,55 +38,78 @@ class MainActivity : AppCompatActivity() {
             CAMERA_REQUEST_CODE -> {
                 if(resultCode == Activity.RESULT_OK && data!= null){
                     val photo = data.extras.get("data") as Bitmap
-                    displayToastWithLabel(photo)
+                    recognizeObject(photo)
                     photoImageView.setImageBitmap(photo)
                 }
             }
             else -> {
-                Toast.makeText(this, "Unrecognized request code", Toast.LENGTH_SHORT).show()
+                displayLongToast("Unrecognized request code")
             }
         }
     }
 
-    private fun displayToastWithLabel(photo: Bitmap) {
-        val label = "Lukasz Switaj w okularach"
-        recognizeObject(photo)
+    private fun recognizeObject(photo: Bitmap) {
+        val image = FirebaseVisionImage.fromBitmap(photo)
 
-        Toast.makeText(this@MainActivity, label, Toast.LENGTH_LONG).show()
-
-        // https://developer.android.com/guide/topics/ui/notifiers/toasts
+        InternetCheck(object: InternetCheck.Consumer{
+            override fun accept(isConnected: Boolean?) {
+                // if the device is connected to the internet use cloud processing
+                var labeler: FirebaseVisionImageLabeler
+                if(isConnected!!)
+                {
+                    val options = FirebaseVisionCloudImageLabelerOptions.Builder()
+                        .setConfidenceThreshold(0.7f)
+                        .build()
+                    labeler = FirebaseVision.getInstance().getCloudImageLabeler(options)
+                    processImage(labeler, image)
+                }
+                // else use on device processing and suggest turning on the internet
+                else{
+                    displayShortToast("To improve recognition turn on internet connection")
+                    val options = FirebaseVisionOnDeviceImageLabelerOptions.Builder()
+                        .setConfidenceThreshold(0.7f)
+                        .build()
+                    labeler = FirebaseVision.getInstance().getOnDeviceImageLabeler(options)
+                    processImage(labeler, image)
+                }
+            }
+        })
     }
 
-    private fun recognizeObject(photo: Bitmap): String {
-        // https://firebase.google.com/docs/ml-kit/android/label-images
-        val image = FirebaseVisionImage.fromBitmap(photo)
-//        val options = FirebaseVisionOnDeviceImageLabelerOptions.Builder()
-//            .setConfidenceThreshold(0.8f)
-//            .build()
-//        val labeler = FirebaseVision.getInstance().getOnDeviceImageLabeler(options)
-//        val labeler = FirebaseVision.getInstance().onDeviceImageLabeler
-//        val labeler = FirebaseVision.getInstance().onDeviceImageLabeler
-//        val labeler = FirebaseVision.getInstance().getOnDeviceImageLabeler()
-            val labeler = FirebaseVision.getInstance().cloudTextRecognizer
+    private fun processImage(labeler: FirebaseVisionImageLabeler, image: FirebaseVisionImage) {
+        labeler.processImage(image)
+            .addOnSuccessListener { result ->
+                chooseLabels(result)
+            }
+            .addOnFailureListener {
+                displayLongToast("No label found, try one more time")
+            }
+    }
 
+    private fun chooseLabels(result: List<FirebaseVisionImageLabel>) {
+        var labels:String
 
-        // TODO if connected with the internet use .getCloudImageLabeler() instead of getOnDeviceImageLabeler()
-        // TODO - add options https://medium.com/androidiots/firebase-ml-kit-101-image-labeling-8078784205cb
+        if(result[0].confidence > 0.95f){
+            labels = "I'm sure it's " + result[0].text
+        }
+        else{
+            labels = "It may be "
+            var i = 0
+            for (label in result) {
+                val text = label.text
+                labels = labels + "\n" + text
+                if(++i >= 3)
+                    break
+            }
+        }
+        displayLongToast(labels)
+    }
 
-        var result:String = "ok"
+    private fun displayLongToast(label: String) {
+        Toast.makeText(this, label, Toast.LENGTH_LONG).show()
+    }
 
-//        labeler.processImage(image)
-//            .addOnSuccessListener { labels ->
-//                for (label in labels) {
-//                    val text = label.text
-//                    val confidence = label.confidence
-//                    result = result + text + confidence.toString()
-//                }
-//            }
-//            .addOnFailureListener {
-//                result = "No label found, try one more time"
-//            }
-
-        return result
+    private fun displayShortToast(label: String) {
+        Toast.makeText(this, label, Toast.LENGTH_SHORT).show()
     }
 }
